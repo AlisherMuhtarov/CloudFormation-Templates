@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+    Default: "sns-s3-bucket-1234"
+
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "S3EventSNSTopic"
+
+  MySNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      TopicArn: !Ref MySNSTopic
+      Endpoint: "alishermuhtarov13@gmail.com" 
+
+  MyS3BucketEvent:
+    Type: AWS::S3::Bucket
+    Properties:
+      Bucket: !Ref MyS3Bucket
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !Sub 
+              - "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${MySNSId}"
+              - MySNSId: !Ref MySNSTopic
